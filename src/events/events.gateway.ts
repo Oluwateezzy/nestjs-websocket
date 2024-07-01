@@ -1,6 +1,9 @@
+import { NotFoundException } from '@nestjs/common';
 import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer, WsResponse } from '@nestjs/websockets';
 import { from, map, Observable } from 'rxjs';
 import { Server } from 'socket.io';
+
+const userdata: { id: string, name: string, messages: string[] }[] = [{ id: "1234", name: "Tobiloba Ola", messages: [] }];
 
 @WebSocketGateway({
   cors: {
@@ -25,4 +28,15 @@ export class EventsGateway {
     console.log(data)
     return data
   }
+
+  @SubscribeMessage('message')
+  async sendMessage(@MessageBody() data: { id: string, message: any }) {
+    const user = userdata.find((value) => value.id === data.id)
+    if (!user) {
+      throw new NotFoundException("User not found")
+    }
+    user.messages.push(data.message)
+    return user
+  }
+
 }
