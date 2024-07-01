@@ -2,13 +2,27 @@ import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer, WsRes
 import { from, map, Observable } from 'rxjs';
 import { Server } from 'socket.io';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  }
+})
 export class EventsGateway {
   @WebSocketServer()
   server: Server
 
   @SubscribeMessage('events')
   findAll(@MessageBody() data: any): Observable<WsResponse<number>> {
-    return from([1, 2, 3]).pipe(map(item => ({ event: 'events', data: item })));
+    console.log(data)
+    return from([1, 2, 3]).pipe(map(item => {
+      console.log({ event: 'events', data: item })
+      return ({ event: 'events', data: item })
+    }));
+  }
+
+  @SubscribeMessage('identity')
+  async identity(@MessageBody() data: number): Promise<number> {
+    console.log(data)
+    return data
   }
 }
